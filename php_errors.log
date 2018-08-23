@@ -1,0 +1,2 @@
+[21-Aug-2018 14:29:55 UTC] PHP Warning:  require_once(src.functions.php): failed to open stream: No such file or directory in C:\work_folder\unit\tests\functionsTest.php on line 5
+[21-Aug-2018 14:29:55 UTC] PHP Fatal error:  require_once(): Failed opening required 'src.functions.php' (include_path='.;C:\php\pear') in C:\work_folder\unit\tests\functionsTest.php on line 5

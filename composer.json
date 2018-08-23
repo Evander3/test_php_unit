@@ -1,0 +1,16 @@
+{
+    "name": "diginamic11/unit",
+    "require": {
+        "phpunit/phpunit": "^7.3"
+    },
+    "authors": [
+        {
+            "name": "Maxime Urvoy",
+            "email": "max.urvoy@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "phpstan/phpstan": "^0.10.3",
+        "friendsofphp/php-cs-fixer": "^2.12"
+    }
+}
