@@ -1,34 +1,52 @@
 <?php
+declare(strict_types=1);
 
 use phpDocumentor\Reflection\Types\Void_;
 
+function initialization(string $dbname): PDO
+{
+    $conn = init_db_connection($dbname);
+    init_events_table($conn,$dbname);
+    create_event_table($conn,$dbname);
+    return $conn;
+}
 
-// TEST TEST TEST
-// function ShowMyName($name) {
-//     return sprintf('Your name is %s', $name);
-// }
+function create_event_table(PDO $conn,string $dbname): void
+{
+    $sql_event = "CREATE TABLE IF NOT EXISTS $dbname.records
+                    (
+                        id INT PRIMARY KEY NOT NULL,
+                        time_record DATETIME,
+                        event_id INT NOT NULL,
+                        event_pop INT,
+                        FOREIGN KEY (event_id) REFERENCES events(id)
+                    )";
+    try {
+        $evt_id_init = $conn->exec($sql_event);
+        echo "Records table created successfully<br>";
+    } catch(PDOException $e) {
+        echo 'Failed to create the '.$event_name.' table : '.$e->getMessage().'<br>';
+    }
+}
 
-// function incrementalHash($len = 5){
-//     $charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-//     $base = strlen($charset);
-//     $result = '';
-  
-//     $now = explode(' ', microtime())[1];
-//     while ($now >= $base){
-//       $i = $now % $base;
-//       $result = $charset[$i] . $result;
-//       $now /= $base;
-//     }
-//     return substr($result, -5);
-// }
-
-// function randstr(int $len): string {
-//     $out = substr(md5(microtime()),rand(0,26),$len);
-//     return $out;
-// }
-
-// ENDTEST ENDTEST ENDTEST
-
+function init_events_table(PDO $conn, string $dbname)
+{
+    $sql_events_table = "CREATE TABLE IF NOT EXISTS $dbname.events
+                        (
+                            id INT PRIMARY KEY NOT NULL,
+                            event_name VARCHAR(255),
+                            event_date DATE,
+                            creation_date DATETIME,
+                            event_image MEDIUMBLOB,
+                            event_loc VARCHAR(255)
+                        )";
+    try {
+        $evt_t_init = $conn->exec($sql_events_table);
+        echo "Events table created successfully<br>";
+    } catch(PDOException $e) {
+        echo 'Problème dans la création de la table des events : '.$e->getMessage().'<br>';
+    }
+}
 
 function camelcaser(string &$name)
 {
@@ -38,39 +56,27 @@ function camelcaser(string &$name)
                                 'è'=>'e', 'é'=>'e', 'ê'=>'e', 'ë'=>'e', 'ì'=>'i', 'í'=>'i', 'î'=>'i', 'ï'=>'i', 'ð'=>'o', 'ñ'=>'n', 'ò'=>'o', 'ó'=>'o', 'ô'=>'o', 'õ'=>'o',
                                 'ö'=>'o', 'ø'=>'o', 'ù'=>'u', 'ú'=>'u', 'û'=>'u', 'ý'=>'y', 'þ'=>'b', 'ÿ'=>'y'
     );
-    $str = strtr( $str, $unwanted_array );
-    $name = strtr(ucwords($name),' ','');
+    // Replace diacritics.
+    $name = strtr( $name, $unwanted_array );
+        // var_dump($name);
+    // Put all initials as caps
+    $name = ucwords($name);
+        // var_dump($name);
+    // Removes special chars.
+    $name = preg_replace('/[^A-Za-z0-9\-]/','', $name);
+    $name = trim($name);
+        // var_dump($name);
+    // Replaces all spaces with underscores.
+    $name = str_replace(' ', '_', $name);
+        // var_dump($name);
 }
 
-function create_event_table(string $event_name): void
-{
-    camelcaser($event_name);
-    $sql = "CREATE TABLE IF NOT EXISTS $event_name";
-        //     CREATE TABLE utilisateur
-        // (
-        //     id INT PRIMARY KEY NOT NULL,
-        //     nom VARCHAR(100),
-        //     prenom VARCHAR(100),
-        //     email VARCHAR(255),
-        //     date_naissance DATE,
-        //     pays VARCHAR(255),
-        //     ville VARCHAR(255),
-        //     code_postal VARCHAR(5),
-        //     nombre_achat INT
-        // )
-    try {
-        $stmt = $conn->query($sql);
-        // echo "Database created successfully<br>";
-    } catch(PDOException $e) {
-        echo 'Problème dans la création de la DB : '.$e->getMessage();
-    }
-}
-function init_db_access(string $dbname)
+function init_db_connection(string $dbname)
 {
     $user = 'root';
     $password = '';
     $dsn = "mysql:host=localhost";
-    $sql = "CREATE DATABASE IF NOT EXISTS $dbname";
+    $sql_db = "CREATE DATABASE IF NOT EXISTS $dbname";
     
     try {
         $conn = new PDO($dsn, $user, $password);
@@ -79,17 +85,17 @@ function init_db_access(string $dbname)
     } catch(PDOException $e) {
         echo 'Connexion échouée : '.$e->getMessage();
     }
-
+    
     try {
-        $stmt = $conn->query($sql);
-        // echo "Database created successfully<br>";
-    } catch(PDOException $e) {
-        echo 'Problème dans la création de la DB : '.$e->getMessage();
+        $db_init = $conn->query($sql_db);
+        echo "Database successfully initialized<br>";
+        return $conn;
+    } catch(exception $e) {
+        echo 'Problème dans la création de la DB : '.$e->getMessage().'<br>';
     }
-    return $conn;
 }
 
-function close_db_connection($conn)
+function close_db_connection(PDO $conn): void
 {
     if (isset($conn))
     {

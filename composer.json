@@ -1,7 +1,6 @@
 {
     "name": "diginamic11/unit",
     "require": {
-        "phpunit/phpunit": "^7.3"
     },
     "authors": [
         {
@@ -10,7 +9,9 @@
         }
     ],
     "require-dev": {
+        "phpunit/phpunit": "^7.3",
         "phpstan/phpstan": "^0.10.3",
-        "friendsofphp/php-cs-fixer": "^2.12"
+        "friendsofphp/php-cs-fixer": "^2.12",
+        "squizlabs/php_codesniffer": "*"
     }
 }

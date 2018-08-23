@@ -1,58 +1,54 @@
 <?php
-    declare(strict_types=1);
-    require_once __DIR__ . '/../vendor/autoload.php';
-    require_once __DIR__ . '/../src/functions.php';
 
-    session_start();
+declare(strict_types=1);
+require_once __DIR__.'/../vendor/autoload.php';
+include __DIR__.'/../src/functions.php';
 
-    define('CFG_MAX_POP', 10);
-    define('CFG_MIN_POP', 0);
-    $num_member = 0;
-    $dbname = "db_event_mngr";
+session_start();
 
-    $name = 'Salut a tous !';
-    $name = ucwords($name);
-    echo $name;
-    $name = strtr($name,' ','');
-    // $name = strtr(ucwords($name),' ','');
-    echo $name;
+define('CFG_MAX_POP', 10);
+define('CFG_MIN_POP', 0);
+$num_member = 0;
+$dbname = "db_event_mngr";
+// $event_name = 'placeholder, for god\'s sake, will you work ?';
+// camelcaser($event_name);
+// echo $event_name;
 
+$conn = initialization($dbname);
 
-    $conn = init_db_access($dbname);
+get_session_pop($num_member);
 
-    create_event_table($event_name);
-    
-
-    get_session_pop($num_member);
-    
-    if (isset($_POST["operation"]))
+if (isset($_POST["operation"]))
+{
+    if (function_exists($_POST["operation"]))
     {
-        if (function_exists($_POST["operation"]))
-        {
-            $_POST["operation"]($num_member);
-        }
-        $_SESSION['num_member'] = $num_member;
-        header('Location: index.php');
+        $_POST["operation"]($num_member);
     }
+    $_SESSION['num_member'] = $num_member;
+    header('Location: index.php');
+}
+
+echo '<pre>';
+var_dump($_POST);
+echo '</pre>';
 
 
-    
-    // $agenda_filename = "agenda.txt" ;
-    // $output_date = $_POST['input_date'];
-    // $input_date = explode('-',$output_date);
-    // $date_now = date("Y-m-d H:i:s");
-    // // var_dump($input_date);
-    // // echo (checkdate($input_date[1],$input_date[2],$input_date[0])===false);
-    // if (checkdate($input_date[1],$input_date[2],$input_date[0])===false) {
-    //     echo "La date n'est pas valide !" ;
-    // } else {
-    //     // echo "La date est valide, bravo champion !" ;
-    //     $input_data = trim($_POST['input_data']);
+// $agenda_filename = "agenda.txt" ;
+// $output_date = $_POST['input_date'];
+// $input_date = explode('-',$output_date);
+// $date_now = date("Y-m-d H:i:s");
+// // var_dump($input_date);
+// // echo (checkdate($input_date[1],$input_date[2],$input_date[0])===false);
+// if (checkdate($input_date[1],$input_date[2],$input_date[0])===false) {
+//     echo "La date n'est pas valide !" ;
+// } else {
+//     // echo "La date est valide, bravo champion !" ;
+//     $input_data = trim($_POST['input_data']);
 
-    //     $ag_file_write = fopen($agenda_filename, "a+") or die("Nein nein nein nein nein !");
-    //     fwrite($ag_file_write,"\n $output_date || $date_now || $input_data");
-    //     fclose($ag_file_write);
-    // }
+//     $ag_file_write = fopen($agenda_filename, "a+") or die("Nein nein nein nein nein !");
+//     fwrite($ag_file_write,"\n $output_date || $date_now || $input_data");
+//     fclose($ag_file_write);
+// }
 
 ?>
 
@@ -81,12 +77,11 @@
             <!-- <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email"> -->
             <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
         </div>
-        <button type="submit" name="operation" value="event_data" class="btn btn-success">Envoi</button>
-        
         <div class="form-group">
             <label for="event_img_label">Choose an event image</label>
             <input type="file" class="form-control-file" id="exampleFormControlFile1">
         </div>
+        <button type="submit" name="operation" value="event_data" class="btn btn-success">Envoi</button>
     </form>
 
     <table style="width:100%">
