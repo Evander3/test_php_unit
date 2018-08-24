@@ -2,22 +2,38 @@
 
 declare(strict_types=1);
 require_once __DIR__.'/../vendor/autoload.php';
-include __DIR__.'/../src/functions.php';
+include __DIR__.'/../src/DB_Connect.php';
+include __DIR__.'/../src/GenericFunctions.php';
+include __DIR__.'/../src/GetData.php';
 
 session_start();
 
+echo '<pre>';
+var_dump($_POST);
+echo '</pre>';
+
 define('CFG_MAX_POP', 10);
 define('CFG_MIN_POP', 0);
+define('DEV_MODE', 1);
+// define('DB_NAME','db_event_mngr');
 $num_member = 0;
-$dbname = "db_event_mngr";
+
+// This creates the connection to the database
+// and creates eventually the tables
+$conn = new DB_Connect('db_event_mngr');
+die;
+// TODO : get the event data and put it in the db
+get_event_data($conn);
 // $event_name = 'placeholder, for god\'s sake, will you work ?';
 // camelcaser($event_name);
 // echo $event_name;
 
-$conn = initialization($dbname);
-
+//  It post the current event pop number and modify the 
+// $num_member value with it
 get_session_pop($num_member);
 
+// Then it changes the actual value of $num_member depending of the 
+// operation clicked
 if (isset($_POST["operation"]))
 {
     if (function_exists($_POST["operation"]))
@@ -25,12 +41,21 @@ if (isset($_POST["operation"]))
         $_POST["operation"]($num_member);
     }
     $_SESSION['num_member'] = $num_member;
-    header('Location: index.php');
+    if (! DEV_MODE)
+    {
+        header('Location: index.php');
+    }
 }
 
-echo '<pre>';
-var_dump($_POST);
-echo '</pre>';
+// After this, the connection to the db is destroyed
+close_db_connection($conn);
+
+
+
+
+// echo '<pre>';
+// var_dump($_POST);
+// echo '</pre>';
 
 
 // $agenda_filename = "agenda.txt" ;
@@ -63,25 +88,24 @@ echo '</pre>';
 
 <body>
     <h2>Définir un évènement :</h2>
-    <!-- <br /> -->
     <form action="" method="POST">
         <div class="form-group">
             <label for="event_date_label">Date</label>
             <input type="date" class="form-control" name="event_date" placeholder="YYYY-MM-DD">
-            <!-- <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email"> -->
-            <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
         </div>
         <div class="form-group">
             <label for="event_name_label">Nom de l'évènement</label>
             <input type="text" class="form-control" name="event_name" >
-            <!-- <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email"> -->
-            <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
         </div>
         <div class="form-group">
+            <label for="event_loc_label">Lieu de l'évènement</label>
+            <input type="text" class="form-control" name="event_loc" >
+        </div>
+        <!-- <div class="form-group">
             <label for="event_img_label">Choose an event image</label>
             <input type="file" class="form-control-file" id="exampleFormControlFile1">
-        </div>
-        <button type="submit" name="operation" value="event_data" class="btn btn-success">Envoi</button>
+        </div> -->
+        <button type="submit" name="event" value="event_data" class="btn btn-success">Envoi</button>
     </form>
 
     <table style="width:100%">

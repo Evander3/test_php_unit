@@ -13,5 +13,8 @@
         "phpstan/phpstan": "^0.10.3",
         "friendsofphp/php-cs-fixer": "^2.12",
         "squizlabs/php_codesniffer": "*"
+    },
+    "autoload": {
+        "psr-4": {"App\\": "src/"}
     }
 }
