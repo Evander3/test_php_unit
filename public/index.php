@@ -15,73 +15,47 @@ echo '</pre>';
 
 $num_member = 0;
 
-// This creates the connection to the database
-// and creates eventually the tables
+// $dbco is the oject "connection to the database".
 $dbco = new App\DB_Connect();
+// $conn is the PDO object linking with the SQL db.
 $conn = $dbco->init_db();
-echo '<pre>';
+
 var_dump($conn);
-echo '</pre>';
 
+// TODO : get the event data and put it in the db
+$datalnk = new App\GetData($conn);
 
-if (isset($_POST["event_name"]))
+$datalnk->getEventPop($num_member);
+
+$test1 = isset($_POST["operation"]);
+$test2 = isset($_POST["event_name"]);
+
+if ($test1 || $test2)
 {
-    // TODO : get the event data and put it in the db
-    $datalnk = new App\GetData($conn);
-
-    //  It post the current event pop number and modify the 
-    // $num_member value with it
-    $datalnk->getEventPop($num_member);
-    $event_name_array = $datalnk->getEventName($_POST["event_name"]);
-    $datalnk->pushEventData($conn,$event_name_array[1],$event_name_array[0], $num_member, $_POST["event_date"], $_POST["event_loc"]);
-    //  TEST GenericFunctions
-    // $event_name = 'placeholder, for god\'s sake, will you work ?';
-    // $operation = new App\GenericFunctions();
-    // $operation->camelcaser($event_name);
-    // echo $event_name;
-}
-// Then it changes the actual value of $num_member depending of the 
-// operation clicked
-if (isset($_POST["operation"]))
+    // If the operations buttons are clicked, the pop value changes
+    if ($test1)
+    {
+        if (function_exists($_POST["operation"]))
+        {
+            $_POST["operation"]($num_member);
+        }
+        $_SESSION['num_member'] = $num_member;
+    }
+    // The creation/modification of the event data
+    if ($test2)
+    {
+        $datalnk->getEventData($_POST,$num_member);
+    }
+    
+    $redir = new App\GenericFunctions();
+    $redir->redirect($dbco);
+} else
 {
-    if (function_exists($_POST["operation"]))
-    {
-        $_POST["operation"]($num_member);
-    }
-    $_SESSION['num_member'] = $num_member;
-    if ( ! $dbco::DEV_MODE)
-    {
-        echo 'test';
-        header('Location: index.php');
-    }
+    echo "La, y a un os ...";
 }
+var_dump($num_member);
 // After this, the connection to the db is destroyed
-// $conn->close_db_connection($conn);
-
-
-
-
-// echo '<pre>';
-// var_dump($_POST);
-// echo '</pre>';
-
-
-// $agenda_filename = "agenda.txt" ;
-// $output_date = $_POST['input_date'];
-// $input_date = explode('-',$output_date);
-// $date_now = date("Y-m-d H:i:s");
-// // var_dump($input_date);
-// // echo (checkdate($input_date[1],$input_date[2],$input_date[0])===false);
-// if (checkdate($input_date[1],$input_date[2],$input_date[0])===false) {
-//     echo "La date n'est pas valide !" ;
-// } else {
-//     // echo "La date est valide, bravo champion !" ;
-//     $input_data = trim($_POST['input_data']);
-
-//     $ag_file_write = fopen($agenda_filename, "a+") or die("Nein nein nein nein nein !");
-//     fwrite($ag_file_write,"\n $output_date || $date_now || $input_data");
-//     fclose($ag_file_write);
-// }
+// $dbco::close_db_connection($conn);
 
 ?>
 
