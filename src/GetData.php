@@ -4,31 +4,72 @@ namespace App;
 
 class GetData
 {
-    public function get_event_data(PDO $conn)
+    private const CFG_MAX_POP = 10;
+    private const CFG_MIN_POP = 0;
+    private static $conn;
+
+    public function __construct(\PDO $conn)
     {
-        // $_POST['event_date']
-        // $_POST['event_name']
-        // $_POST['event_loc']
-        // try {
-        //     $stmt = $pdo->prepare("
-        //         DELETE FROM `personnes`
-        //         WHERE lastname LIKE :lastname AND 
-        //         firstname LIKE :firstname
-        //     ");
-        //     // bindvalue injecte la valeur de mes variables
-        //     $stmt->bindValue('firstname', $firstname);
-        //     $stmt->bindValue('lastname', $lastname);
-        //     // bindparam injecte la référence de mes varaibles
-        //     $stmt->bindParam('firstname', $firstname);
-        //     $stmt->bindParam('lastname', $lastname);
-        //     // on execute le code derriere sans avoir besoi nde rappeler les variables
-        //     $stmt->execute();
-        // } catch (PDOException $e) {
-        //     echo $e->getMessage();
-        // }
+        self::$conn = $conn;
     }
 
-    public function get_session_pop(int &$num_member): void
+    public static function getCFG_MIN_POP(): int
+    {
+        return self::CFG_MIN_POP;
+    }
+    public static function getCFG_MAX_POP(): int
+    {
+        return self::CFG_MAX_POP;
+    }
+    
+    public function pushEventData(\PDO $conn)
+    {
+        
+    $datalnk->pushEventData(
+        $conn,
+        $event_name_array[1],
+        $event_name_array[0],
+        $num_member,
+        $_POST["event_date"],
+        $_POST["event_loc"]
+    );
+    }
+
+    public function getEventData($post,int $event_pop)
+    {
+        // first let's get that damn last_saved
+        $date = new \DateTime('',new \DateTimeZone('Europe/Paris'));
+        $last_saved = serialize($date);
+
+        try {
+            $stmt = self::$conn->prepare("
+                INSERT INTO events (
+                    event_name,
+                    event_pop,
+                    last_saved,
+                    event_date,
+                    event_loc)
+                VALUES (
+                    :event_name,
+                    :event_pop,
+                    :last_saved,
+                    :event_date,
+                    :event_loc)
+            ");
+            $stmt->bindValue('event_name', $post['event_name']);
+            $stmt->bindValue('event_pop', $event_pop);
+            $stmt->bindValue('last_saved', $last_saved);
+            $stmt->bindValue('event_date', $post['event_date']);
+            $stmt->bindValue('event_loc', $post['event_loc']);
+            // on execute le code derriere sans avoir besoin de rappeler les variables
+            $stmt->execute();
+            echo "The Push Is Done, sir!";
+        } catch (\PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function getEventPop(int &$num_member): void
     {
         if (!isset($_SESSION['num_member'])) {
             $_SESSION['num_member']=$num_member;
@@ -37,26 +78,26 @@ class GetData
         }
     }
 
-    public function increase(int &$num_member): void
+    private function increase(int &$num_member): void
     {
-        if ($num_member<CFG_MAX_POP) {
+        if ($num_member<self::CFG_MAX_POP) {
             $num_member++;
-        } elseif ($num_member>=CFG_MAX_POP) {
-            $num_member=CFG_MAX_POP;
+        } elseif ($num_member>=self::CFG_MAX_POP) {
+            $num_member=self::CFG_MAX_POP;
         } else {
-            $num_member=CFG_MIN_POP;
+            $num_member=self::CFG_MIN_POP;
         }
     }
 
-    public function decrease(int &$num_member): void
+    private function decrease(int &$num_member): void
     {
-        if ($num_member>CFG_MAX_POP) {
-            $num_member=CFG_MAX_POP;
+        if ($num_member>self::CFG_MAX_POP) {
+            $num_member=self::CFG_MAX_POP;
         }
-        if ($num_member>CFG_MIN_POP) {
+        if ($num_member>self::CFG_MIN_POP) {
             $num_member--;
         } else {
-            $num_member=CFG_MIN_POP;
+            $num_member=self::CFG_MIN_POP;
         }
     }
 

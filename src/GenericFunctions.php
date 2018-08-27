@@ -2,10 +2,18 @@
 declare(strict_types=1);
 namespace App;
 
+use phpDocumentor\Reflection\Types\Void_;
+
+
 class GenericFunctions
 {
     public $name;
 
+    public function sanitazer(string &$name): void
+    {
+        $name = trim($name);
+        $name = htmlspecialchars($name);
+    }
     public function camelcaser(string &$name): void
     {
         $unwanted_array = array(    'Š'=>'S', 'š'=>'s', 'Ž'=>'Z', 'ž'=>'z', 'À'=>'A', 'Á'=>'A', 'Â'=>'A', 'Ã'=>'A', 'Ä'=>'A', 'Å'=>'A', 'Æ'=>'A', 'Ç'=>'C', 'È'=>'E', 'É'=>'E',
@@ -21,5 +29,13 @@ class GenericFunctions
         $name = ucwords($name);
         // Removes special chars.
         $name = preg_replace('/[^A-Za-z0-9\-]/','', $name);
+    }
+    public function redirect($dbco)
+    {
+        if ( ! $dbco->getDevMode())
+        {
+            echo 'test';
+            header('Location: index.php');
+        }
     }
 }
