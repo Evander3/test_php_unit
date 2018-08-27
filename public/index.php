@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 require_once __DIR__.'/../vendor/autoload.php';
-include __DIR__.'/../src/DB_Connect.php';
-include __DIR__.'/../src/GenericFunctions.php';
-include __DIR__.'/../src/GetData.php';
+// require __DIR__.'/../src/DB_Connect.php';
+// require __DIR__.'/../src/GenericFunctions.php';
+// require __DIR__.'/../src/GetData.php';
+// require __DIR__.'/../src/EventInterface.php';
 
 session_start();
 
@@ -12,26 +13,33 @@ echo '<pre>';
 var_dump($_POST);
 echo '</pre>';
 
-define('CFG_MAX_POP', 10);
-define('CFG_MIN_POP', 0);
-define('DEV_MODE', 1);
-// define('DB_NAME','db_event_mngr');
 $num_member = 0;
 
 // This creates the connection to the database
 // and creates eventually the tables
-$conn = new DB_Connect('db_event_mngr');
-die;
-// TODO : get the event data and put it in the db
-get_event_data($conn);
-// $event_name = 'placeholder, for god\'s sake, will you work ?';
-// camelcaser($event_name);
-// echo $event_name;
+$dbco = new App\DB_Connect();
+$conn = $dbco->init_db();
+echo '<pre>';
+var_dump($conn);
+echo '</pre>';
 
-//  It post the current event pop number and modify the 
-// $num_member value with it
-get_session_pop($num_member);
 
+if (isset($_POST["event_name"]))
+{
+    // TODO : get the event data and put it in the db
+    $datalnk = new App\GetData($conn);
+
+    //  It post the current event pop number and modify the 
+    // $num_member value with it
+    $datalnk->getEventPop($num_member);
+    $event_name_array = $datalnk->getEventName($_POST["event_name"]);
+    $datalnk->pushEventData($conn,$event_name_array[1],$event_name_array[0], $num_member, $_POST["event_date"], $_POST["event_loc"]);
+    //  TEST GenericFunctions
+    // $event_name = 'placeholder, for god\'s sake, will you work ?';
+    // $operation = new App\GenericFunctions();
+    // $operation->camelcaser($event_name);
+    // echo $event_name;
+}
 // Then it changes the actual value of $num_member depending of the 
 // operation clicked
 if (isset($_POST["operation"]))
@@ -41,14 +49,14 @@ if (isset($_POST["operation"]))
         $_POST["operation"]($num_member);
     }
     $_SESSION['num_member'] = $num_member;
-    if (! DEV_MODE)
+    if ( ! $dbco::DEV_MODE)
     {
+        echo 'test';
         header('Location: index.php');
     }
 }
-
 // After this, the connection to the db is destroyed
-close_db_connection($conn);
+// $conn->close_db_connection($conn);
 
 
 
@@ -119,7 +127,7 @@ close_db_connection($conn);
             <td>
                 <form method="POST">
                     <center>
-                        <?php if ($_SESSION['num_member']>CFG_MIN_POP): ?>
+                        <?php if ($_SESSION['num_member']>App\GetData::getCFG_MIN_POP()): ?>
                             <button type="submit" name="operation" value="decrease"class="btn btn-primary"><h1>-</h1></button>
                         <?php else: ?>
                             <button type="submit" name="operation" value="decrease" disabled="true"class="btn btn-primary"><h1>-</h1></button>
@@ -135,7 +143,7 @@ close_db_connection($conn);
             <td>
                 <form method="POST">
                     <center>
-                        <?php if ($_SESSION['num_member']<CFG_MAX_POP): ?>
+                        <?php if ($_SESSION['num_member']<App\GetData::getCFG_MAX_POP()): ?>
                             <button type="submit" name="operation" value="increase"class="btn btn-primary"><h1>+</h1></button>
                         <?php else: ?>
                             <button type="submit" name="operation" value="increase" disabled="true"class="btn btn-primary"><h1>+</h1></button>
