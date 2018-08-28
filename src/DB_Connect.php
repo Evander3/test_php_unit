@@ -5,11 +5,16 @@ namespace App;
 class DB_Connect
 {
     public $conn;
-    public const DEV_MODE = 1;
-    static private $db_name = 'db_event_mngr';
-
+    private const DEV_MODE = true;
+    const DB_NAME = 'db_event_mngr';
+    
+    public static function getDevMode(): bool
+    {
+        return self::DEV_MODE;
+    }
     public function init_db(): \PDO
     {
+>>>>>>> 3b5b41e06173b5105b0423ee68d9dc5b71f1139f
         $conn = self::init_db_connection();
         self::init_events_table($conn);
         self::init_records_table($conn);
@@ -21,7 +26,7 @@ class DB_Connect
         $user = 'root';
         $password = '';
         $dsn = "mysql:host=localhost";
-        $sql_db = "CREATE DATABASE IF NOT EXISTS ".self::$db_name.
+        $sql_db = "CREATE DATABASE IF NOT EXISTS ".self::DB_NAME.
                     " CHARACTER SET utf8";
         
         try {
@@ -43,7 +48,7 @@ class DB_Connect
 
     private function init_events_table(\PDO $conn): void
     {
-        $sql_events_table = "CREATE TABLE IF NOT EXISTS ".self::$db_name.".events
+        $sql_events_table = "CREATE TABLE IF NOT EXISTS ".self::DB_NAME.".events
                             (
                                 id INT PRIMARY KEY NOT NULL,
                                 event_stringid VARCHAR(255),
@@ -64,7 +69,7 @@ class DB_Connect
 
     private function init_records_table(\PDO $conn): void
     {
-        $sql_event = "CREATE TABLE IF NOT EXISTS ".self::$db_name.".records
+        $sql_event = "CREATE TABLE IF NOT EXISTS ".self::DB_NAME.".records
                         (
                             id INT PRIMARY KEY NOT NULL,
                             time_record DATETIME,
@@ -80,7 +85,7 @@ class DB_Connect
         }
     }
 
-    public function close_db_connection(\PDO $conn): void
+    public static function close_db_connection(\PDO $conn): void
     {
         unset($conn);
     }

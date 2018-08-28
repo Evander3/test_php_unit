@@ -4,45 +4,72 @@ namespace App;
 
 class GetData implements Eventinterface
 {
-    static public $conn;
-    // Hardcoded limits, I don't like it.
-    static private $CFG_MAX_POP = 10;
-    static private  $CFG_MIN_POP = 0;
-    
+    private const CFG_MAX_POP = 10;
+    private const CFG_MIN_POP = 0;
+    private static $conn;
+
     public function __construct(\PDO $conn)
     {
         self::$conn = $conn;
     }
 
-    static public function getCFG_MAX_POP()
+    public static function getCFG_MIN_POP(): int
     {
-        return self::$CFG_MAX_POP;
+        return self::CFG_MIN_POP;
     }
-
-    static public function getCFG_MIN_POP()
+    public static function getCFG_MAX_POP(): int
     {
-        return self::$CFG_MIN_POP;
+        return self::CFG_MAX_POP;
     }
-
-    public function getEventName(string $raw_event_name)
+    
+    public function pushEventData(\PDO $conn)
     {
-        $db_event_name = htmlspecialchars($raw_event_name);
-        $temp_op = new GenericFunctions();
-        $temp_op->camelcaser($raw_event_name);
-        $event_name_array = [$db_event_name,$raw_event_name];
-        return $event_name_array;
         
-        echo '<pre>';
-        var_dump($event_name_array);
-        echo '</pre>';
+    $datalnk->pushEventData(
+        $conn,
+        $event_name_array[1],
+        $event_name_array[0],
+        $num_member,
+        $_POST["event_date"],
+        $_POST["event_loc"]
+    );
     }
-    public function getEventDate(\PDO $conn, string $event_date)
+
+    public function getEventData($post,int $event_pop)
     {
+        // first let's get that damn last_saved
+        $date = new \DateTime('',new \DateTimeZone('Europe/Paris'));
+        $last_saved = serialize($date);
+
+        try {
+            $stmt = self::$conn->prepare("
+                INSERT INTO events (
+                    event_name,
+                    event_pop,
+                    last_saved,
+                    event_date,
+                    event_loc)
+                VALUES (
+                    :event_name,
+                    :event_pop,
+                    :last_saved,
+                    :event_date,
+                    :event_loc)
+            ");
+            $stmt->bindValue('event_name', $post['event_name']);
+            $stmt->bindValue('event_pop', $event_pop);
+            $stmt->bindValue('last_saved', $last_saved);
+            $stmt->bindValue('event_date', $post['event_date']);
+            $stmt->bindValue('event_loc', $post['event_loc']);
+            // on execute le code derriere sans avoir besoin de rappeler les variables
+            $stmt->execute();
+            echo "The Push Is Done, sir!";
+        } catch (\PDOException $e) {
+            echo $e->getMessage();
+        }
     }
-    public function getEventLoc(\PDO $conn, string $event_loc)
-    {
-    }
-    public function getEventPop(int &$num_member)
+
+    public function getEventPop(int &$num_member): void
     {
         if (!isset($_SESSION['num_member'])) {
             $_SESSION['num_member']=$num_member;
@@ -72,26 +99,26 @@ class GetData implements Eventinterface
         }
     }
 
-    public function increase(int &$num_member): void
+    private function increase(int &$num_member): void
     {
-        if ($num_member<self::$CFG_MAX_POP) {
+        if ($num_member<self::CFG_MAX_POP) {
             $num_member++;
-        } elseif ($num_member>=self::$CFG_MAX_POP) {
-            $num_member=self::$CFG_MAX_POP;
+        } elseif ($num_member>=self::CFG_MAX_POP) {
+            $num_member=self::CFG_MAX_POP;
         } else {
-            $num_member=self::$CFG_MIN_POP;
+            $num_member=self::CFG_MIN_POP;
         }
     }
 
-    public function decrease(int &$num_member): void
+    private function decrease(int &$num_member): void
     {
-        if ($num_member>self::$CFG_MAX_POP) {
-            $num_member=self::$CFG_MAX_POP;
+        if ($num_member>self::CFG_MAX_POP) {
+            $num_member=self::CFG_MAX_POP;
         }
-        if ($num_member>self::$CFG_MIN_POP) {
+        if ($num_member>self::CFG_MIN_POP) {
             $num_member--;
         } else {
-            $num_member=self::$CFG_MIN_POP;
+            $num_member=self::CFG_MIN_POP;
         }
     }
 
