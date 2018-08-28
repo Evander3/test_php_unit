@@ -14,7 +14,6 @@ class DB_Connect
     }
     public function init_db(): \PDO
     {
->>>>>>> 3b5b41e06173b5105b0423ee68d9dc5b71f1139f
         $conn = self::init_db_connection();
         self::init_events_table($conn);
         self::init_records_table($conn);
